@@ -53,43 +53,42 @@ function App() {
 
     newSocket.on('receive_message', async (data) => {
       try {
-        // REPLAY PROTECTION: Prevent duplicate message IDs
+        addLog('RCV_PACKET', `Received encrypted payload from ${data.senderUsername}`);
+        
+        const decrypted = decryptMessage(
+          data.ciphertext,
+          data.nonce,
+          data.senderPublicKey,
+          keys.secretKey
+        );
+
+        addLog('DECRYPT_SUCCESS', `Successfully decrypted message using NaCl box.open`);
+
+        const newMessage = {
+          id: Date.now(),
+          msgId: data.msgId,
+          senderId: data.senderId,
+          senderUsername: data.senderUsername,
+          text: decrypted,
+          timestamp: new Date().toLocaleTimeString(),
+          isSent: false,
+          security: {
+            nonce: data.nonce,
+            ciphertext: data.ciphertext,
+            sharedKey: 'Derived via X25519'
+          }
+        };
+
         setMessages(prev => {
-          if (prev.some(m => m.msgId === data.msgId)) {
+          if (data.msgId && prev.some(m => m.msgId === data.msgId)) {
             addLog('REPLAY_BLOCKED', `Blocked duplicate packet ID: ${data.msgId.substring(0, 8)}`);
             return prev;
           }
 
-          addLog('RCV_PACKET', `Received encrypted payload from ${data.senderUsername}`);
-          
-          const decrypted = decryptMessage(
-            data.ciphertext,
-            data.nonce,
-            data.senderPublicKey,
-            keys.secretKey
-          );
-
-          const newMessage = {
-            id: Date.now(),
-            msgId: data.msgId, // Unique ID from sender
-            senderId: data.senderId,
-            senderUsername: data.senderUsername,
-            text: decrypted,
-            timestamp: new Date().toLocaleTimeString(),
-            isSent: false,
-            security: {
-              nonce: data.nonce,
-              ciphertext: data.ciphertext,
-              sharedKey: 'Derived via X25519'
-            }
-          };
-
-          addLog('DECRYPT_SUCCESS', `Successfully decrypted message using NaCl box.open`);
-
           // SELF-DESTRUCT: Remove after 30 seconds
           setTimeout(() => {
             setMessages(current => current.filter(m => m.msgId !== data.msgId));
-            addLog('SELF_DESTRUCT', `Message ${data.msgId.substring(0, 8)} has been purged from memory.`);
+            addLog('SELF_DESTRUCT', `Message ${data.msgId ? data.msgId.substring(0, 8) : 'unknown'} has been purged from memory.`);
           }, 30000);
 
           return [...prev, newMessage];

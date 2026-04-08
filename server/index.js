@@ -33,17 +33,18 @@ io.on('connection', (socket) => {
   });
 
   socket.on('send_message', (data) => {
-    const { receiverId, ciphertext, nonce, senderPublicKey } = data;
+    const { msgId, receiverId, ciphertext, nonce, senderPublicKey } = data;
     const sender = users.get(socket.id);
 
     if (sender && receiverId) {
-      console.log(`Relaying message from ${sender.username} to ${receiverId}`);
+      console.log(`Relaying message ${msgId.substring(0, 8)} from ${sender.username} to ${receiverId}`);
       io.to(receiverId).emit('receive_message', {
+        msgId,
         senderId: socket.id,
         senderUsername: sender.username,
         ciphertext,
         nonce,
-        senderPublicKey // This is the ephemeral public key for this message/session
+        senderPublicKey
       });
     }
   });

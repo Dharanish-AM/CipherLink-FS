@@ -39,9 +39,9 @@ function App() {
 
   const handleLogin = async () => {
     if (!username.trim()) return;
-    
+
     setIsConnecting(true);
-    
+
     // FAKE FANCY SEQUENTIAL AUTH
     const steps = [
       { msg: 'INITIALIZING SECURE HANDSHAKE...', delay: 600 },
@@ -59,7 +59,7 @@ function App() {
 
     const keys = generateKeyPair();
     setMyKeys(keys);
-    
+
     const newSocket = io(SOCKET_URL);
     setSocket(newSocket);
 
@@ -78,7 +78,7 @@ function App() {
     newSocket.on('receive_message', async (data) => {
       try {
         addLog('RCV_PACKET', `Received encrypted payload from ${data.senderUsername}`, 'info');
-        
+
         // Simulate "Decrypting..." state briefly
         setIsTyping(true);
         setTimeout(() => setIsTyping(false), 1000);
@@ -222,7 +222,7 @@ function App() {
             <Shield className={isConnecting ? 'pulse' : ''} color="#00ff41" size={64} />
             <div className="title" style={{ fontSize: '2rem' }}>CipherLink FS</div>
           </div>
-          
+
           {!isConnecting ? (
             <>
               <p style={{ color: 'var(--text-dim)', fontSize: '0.7rem', textAlign: 'center', letterSpacing: '2px' }}>
@@ -239,7 +239,7 @@ function App() {
                   style={{ textAlign: 'center', textTransform: 'uppercase', letterSpacing: '2px' }}
                 />
               </div>
-              <button 
+              <button
                 onClick={handleLogin}
                 style={{ padding: '15px', fontSize: '0.8rem' }}
               >
@@ -282,8 +282,8 @@ function App() {
               <p style={{ color: 'var(--text-dim)', fontSize: '0.65rem', fontStyle: 'italic' }}>No other nodes detected on network...</p>
             ) : (
               users.map(u => (
-                <div 
-                  key={u.id} 
+                <div
+                  key={u.id}
                   className={`user-item ${selectedUser?.id === u.id ? 'active' : ''}`}
                   onClick={() => setSelectedUser(u)}
                 >
@@ -297,17 +297,7 @@ function App() {
                 </div>
               ))
             )}
-            {users.length > 0 && (
-               <div className="user-item inactive" style={{ cursor: 'default' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <div className="status-dot offline" style={{ width: '6px', height: '6px' }}></div>
-                    <div style={{ fontWeight: 'bold', fontSize: '0.8rem' }}>RESERVED_NODE_04</div>
-                  </div>
-                  <div style={{ fontSize: '0.55rem', color: 'var(--text-dim)', marginTop: '4px' }}>
-                    STATUS: OFFLINE // NO PULSE
-                  </div>
-               </div>
-            )}
+
           </div>
         </div>
         <div className={`chat-area ${isFlashing ? 'flash-red' : ''}`}>
@@ -316,8 +306,8 @@ function App() {
               <Lock size={12} />
               <span>E2EE: NACL_BOX</span>
             </div>
-            <button 
-              className={isAttackMode ? 'active' : ''} 
+            <button
+              className={isAttackMode ? 'active' : ''}
               style={{ fontSize: '0.6rem', padding: '5px 12px' }}
               onClick={() => setIsAttackMode(!isAttackMode)}
             >
@@ -325,70 +315,70 @@ function App() {
             </button>
             <div style={{ flex: 1 }}></div>
             <div style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
-               <div className="status-badge" style={{ color: 'var(--info)' }}>
-                 <Wifi size={12} />
-                 <span>LATENCY: 12ms</span>
-               </div>
-               <div className="status-badge" style={{ color: 'var(--success)' }}>
-                 <Shield size={12} />
-                 <span>FS: ACTIVE</span>
-               </div>
+              <div className="status-badge" style={{ color: 'var(--info)' }}>
+                <Wifi size={12} />
+                <span>LATENCY: 12ms</span>
+              </div>
+              <div className="status-badge" style={{ color: 'var(--success)' }}>
+                <Shield size={12} />
+                <span>FS: ACTIVE</span>
+              </div>
             </div>
           </div>
-          
+
           <div className="messages-list">
             {!selectedUser ? (
-               <div className="empty-chat-container">
-                  <Terminal size={48} color="var(--accent)" style={{ opacity: 0.2 }} />
-                  <div style={{ textAlign: 'center' }}>
-                    <div style={{ color: 'var(--accent)', letterSpacing: '2px', fontWeight: 'bold', fontSize: '0.9rem' }}>AWAITING NODE SELECTION</div>
-                    <div style={{ color: 'var(--text-dim)', fontSize: '0.6rem', marginTop: '5px' }}>SELECT AN ACTIVE OPERATOR TO INITIALIZE TUNNEL</div>
-                  </div>
-                  <div className="empty-chat-viz"></div>
-               </div>
-            ) : messages.filter(m => 
+              <div className="empty-chat-container">
+                <Terminal size={48} color="var(--accent)" style={{ opacity: 0.2 }} />
+                <div style={{ textAlign: 'center' }}>
+                  <div style={{ color: 'var(--accent)', letterSpacing: '2px', fontWeight: 'bold', fontSize: '0.9rem' }}>AWAITING NODE SELECTION</div>
+                  <div style={{ color: 'var(--text-dim)', fontSize: '0.6rem', marginTop: '5px' }}>SELECT AN ACTIVE OPERATOR TO INITIALIZE TUNNEL</div>
+                </div>
+                <div className="empty-chat-viz"></div>
+              </div>
+            ) : messages.filter(m =>
               m.isSent ? (true) : (m.senderId === selectedUser?.id)
             ).length === 0 ? (
-               <div className="empty-chat-container">
-                  <Zap size={48} color="var(--accent)" className="pulse" />
-                  <div style={{ textAlign: 'center' }}>
-                    <div style={{ color: 'var(--accent)', letterSpacing: '2px', fontWeight: 'bold' }}>SECURE CHANNEL ESTABLISHED</div>
-                    <div style={{ color: 'var(--success)', fontSize: '0.6rem', marginTop: '5px' }}>KEYS SYNCHRONIZED // READY FOR TRANSMISSION</div>
-                  </div>
-                  <div className="log-value" style={{ fontSize: '0.5rem', opacity: 0.5 }}>
-                    LOCAL_ID: {myKeys?.publicKey.substring(0, 16)}...
-                  </div>
-               </div>
+              <div className="empty-chat-container">
+                <Zap size={48} color="var(--accent)" className="pulse" />
+                <div style={{ textAlign: 'center' }}>
+                  <div style={{ color: 'var(--accent)', letterSpacing: '2px', fontWeight: 'bold' }}>SECURE CHANNEL ESTABLISHED</div>
+                  <div style={{ color: 'var(--success)', fontSize: '0.6rem', marginTop: '5px' }}>KEYS SYNCHRONIZED // READY FOR TRANSMISSION</div>
+                </div>
+                <div className="log-value" style={{ fontSize: '0.5rem', opacity: 0.5 }}>
+                  LOCAL_ID: {myKeys?.publicKey.substring(0, 16)}...
+                </div>
+              </div>
             ) : (
-              messages.filter(m => 
+              messages.filter(m =>
                 m.isSent ? (true) : (m.senderId === selectedUser?.id)
               ).map((m, index, filtered) => {
-              const prevMessage = filtered[index - 1];
-              const isGrouped = prevMessage && (prevMessage.isSent === m.isSent) && (prevMessage.senderId === m.senderId);
+                const prevMessage = filtered[index - 1];
+                const isGrouped = prevMessage && (prevMessage.isSent === m.isSent) && (prevMessage.senderId === m.senderId);
 
-              return (
-                <div key={m.id} className={`message-item ${m.isSent ? 'sent' : 'received'} ${isGrouped ? 'grouped' : ''}`}>
-                  {!isGrouped && (
-                    <div className="message-header">
-                      <span>{m.isSent ? 'OPERATOR (YOU)' : m.senderUsername.toUpperCase()}</span>
-                      <span>{m.timestamp}</span>
+                return (
+                  <div key={m.id} className={`message-item ${m.isSent ? 'sent' : 'received'} ${isGrouped ? 'grouped' : ''}`}>
+                    {!isGrouped && (
+                      <div className="message-header">
+                        <span>{m.isSent ? 'OPERATOR (YOU)' : m.senderUsername.toUpperCase()}</span>
+                        <span>{m.timestamp}</span>
+                      </div>
+                    )}
+                    <div className="message-body">{m.text}</div>
+                    <div className="encryption-indicator" style={{ position: 'relative', top: 'auto', right: 'auto', marginTop: '8px', justifyContent: 'flex-end' }}>
+                      <Lock size={8} />
+                      <span style={{ fontSize: '0.5rem' }}>{m.isSent ? 'ENCRYPTED' : 'DECRYPTED'} // SHARED_SECRET_X25519</span>
                     </div>
-                  )}
-                  <div className="message-body">{m.text}</div>
-                  <div className="encryption-indicator" style={{ position: 'relative', top: 'auto', right: 'auto', marginTop: '8px', justifyContent: 'flex-end' }}>
-                     <Lock size={8} />
-                     <span style={{ fontSize: '0.5rem' }}>{m.isSent ? 'ENCRYPTED' : 'DECRYPTED'} // SHARED_SECRET_X25519</span>
+                    <div
+                      style={{ fontSize: '0.55rem', marginTop: '5px', color: 'var(--text-dim)', cursor: 'pointer', fontFamily: 'monospace', borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: '5px' }}
+                      onClick={() => setInspectPacket(m)}
+                    >
+                      <Eye size={10} style={{ marginRight: '4px' }} />
+                      {m.security.ciphertext.substring(0, 24)}... [INSPECT_PACKET]
+                    </div>
                   </div>
-                  <div 
-                    style={{ fontSize: '0.55rem', marginTop: '5px', color: 'var(--text-dim)', cursor: 'pointer', fontFamily: 'monospace', borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: '5px' }}
-                    onClick={() => setInspectPacket(m)}
-                  >
-                    <Eye size={10} style={{ marginRight: '4px' }} />
-                    {m.security.ciphertext.substring(0, 24)}... [INSPECT_PACKET]
-                  </div>
-                </div>
-              );
-            }))}
+                );
+              }))}
             {isTyping && (
               <div className="typing-indicator">
                 OPERATOR {selectedUser?.username.toUpperCase()} IS TRANSMITTING...
@@ -432,9 +422,9 @@ function App() {
             <Lock size={18} />
             <span>SECURITY DEBUG LOG</span>
           </div>
-          
+
           {securityLogs.length === 0 && <p style={{ color: 'var(--text-dim)' }}>Awaiting telemetry...</p>}
-          
+
           {securityLogs.map(log => (
             <div key={log.id} className="security-log" style={{ borderLeftColor: log.type === 'success' ? 'var(--success)' : log.type === 'error' ? 'var(--danger)' : log.type === 'warning' ? 'var(--warning)' : 'var(--accent)' }}>
               <div className="log-label">
